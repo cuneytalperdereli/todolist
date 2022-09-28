@@ -3,6 +3,15 @@ const addBtn = document.getElementById("todo-button")
 const todoInput = document.getElementById("todo-input")
 const todoUl = document.getElementById("todo-ul")
 
+let todos = JSON.parse(localStorage.getItem("TODOS")) || [];
+
+const renderSavedTodos = ()=>{
+    todos.forEach(todo => {
+        createListElement(todo)
+    });
+};
+renderSavedTodos();
+
 addBtn.addEventListener("click",() =>{
     if(todoInput.value.trim() === ""){
         alert("Please enter a new todo")
@@ -13,24 +22,31 @@ addBtn.addEventListener("click",() =>{
             text: todoInput.value,
         };
 
-        createListElement(newTodo);
+        createListElement(newTodo); 
+
+        todos.push(newTodo);
+
+
+        localStorage.setItem("TODOS", JSON.stringify(todos));   
+        console.log(todos);
         todoInput.value = ""
-    }
+    } 
+    
 
     
     
 })
 
-const createListElement = (newTodo)=>{
+function createListElement(newTodo){
     const {id,completed,text} = newTodo; //!destr.
 //? yeni bir li elementi olustur ve bu elemente obje icerisindeki
 //? id degerini ve completed class'ini ata
 
     const li = document.createElement("li")
     // li.id =newTodo.id; 
-    li.setAttribute("id",id);
+    li.setAttribute("id",id);  
 
-    // newTodo.completed ? li.classList.add("checked") : "" 
+    //completed ? li.classList.add("checked") : "" 
     completed && li.classList.add("checked");
  //? okey ikonu olustur ve li elementine bagla
     const okIcon = document.createElement("i")
@@ -55,6 +71,36 @@ li.appendChild(p);
 
     todoUl.appendChild(li)
 }
+
+todoUl.addEventListener("click",(e) =>{
+    console.log(e.target);
+    const id = e.target.parentElement.getAttribute("id")
+    if(e.target.classList.contains("fa-trash")){
+        e.target.parentElement.remove();
+
+    todos =  todos.filter((todo) => todo.id!== Number(id))
+    console.log(todos);
+    localStorage.setItem("TODOS", JSON.stringify(todos)); 
+    } 
+ //? ilgili li elementinde checked adinda bir class'i varsa bunu sil
+    //?  aksi takdirde ekle (DOM)
+    if(e.target.classList.contains("fa-check")){
+        e.target.parentElement.classList.toggle("checked")
+
+        todos.map((todo, index) => {
+            if (todo.id == id) {
+              todos[index].completed = !todos[index].completed;
+            }
+          });
+          console.log(todos);
+      
+          //?todos dizisinin son halini localStorage'e sakla
+          localStorage.setItem("TODOS", JSON.stringify(todos));
+
+
+
+    }
+})
 
 todoInput.addEventListener("keydown",(e) =>{
     if(e.code === "Enter"){
